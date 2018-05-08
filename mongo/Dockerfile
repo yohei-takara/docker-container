@@ -1,14 +1,11 @@
 FROM debian:wheezy-slim
 
-# Replace sh to bash
-# RUN rm /bin/sh && ln -s /bin/bash /bin/sh
-
 # 鍵の追加
-RUN  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
 
 ENV MONGO_MAJAR_VERSION 3
-ENV MONGO_MINER_VERSION 4
-ENV MONGO_BATCH_VERSION 10
+ENV MONGO_MINER_VERSION 6
+ENV MONGO_BATCH_VERSION 4
 ENV MONGO_REPO_VERSION ${MONGO_MAJAR_VERSION}.${MONGO_MINER_VERSION}
 ENV MONGO_INSTALL_VAERSION ${MONGO_MAJAR_VERSION}.${MONGO_MINER_VERSION}.${MONGO_BATCH_VERSION}
 
@@ -24,13 +21,14 @@ RUN apt-get update \
           mongodb-org-mongos=${MONGO_INSTALL_VAERSION}\
           mongodb-org-tools=${MONGO_INSTALL_VAERSION}\
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/mongodb \
+    && mv /etc/mongod.conf /etc/mongod.conf.orig \
+    && mkdir -p /data/db /data/log/mongodb\
+    && chown -R mongodb:mongodb /data/db /data/log/mongodb
 
 COPY config /etc/
-
 COPY initialize /usr/src/init/
-
-RUN mkdir -p /var/lib/mongo
 
 ENV MONGO_HOST localhost
 ENV MONGO_PORT 27017
